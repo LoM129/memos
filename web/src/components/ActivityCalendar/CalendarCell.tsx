@@ -15,9 +15,9 @@ export const CalendarCell = memo((props: CalendarCellProps) => {
   const { day, maxCount, tooltipText, onClick } = props;
 
   const handleClick = () => {
-    if (day.count > 0 && onClick) {
+  //  if (day.count > 0 && onClick) {
       onClick(day.date);
-    }
+   // }
   };
 
   const baseClasses =
@@ -51,6 +51,7 @@ export const CalendarCell = memo((props: CalendarCellProps) => {
       onClick={handleClick}
       tabIndex={isInteractive ? 0 : -1}
       aria-label={ariaLabel}
+    //  aria-current={day.isToday ? "date" : undefined}
       aria-current={day.isToday ? "date" : undefined}
       aria-disabled={!isInteractive}
       className={buttonClasses}

@@ -30,6 +30,7 @@ const StatisticsView = observer((props: Props) => {
   const [visibleMonthString, setVisibleMonthString] = useState(dayjs().format("YYYY-MM"));
 
   const handleCalendarClick = useCallback((date: string) => {
+    console.log("Calendar clicked:", date);
     memoFilterStore.removeFilter((f) => f.factor === "displayTime");
     memoFilterStore.addFilter({ factor: "displayTime", value: date });
   }, []);
