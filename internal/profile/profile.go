@@ -87,6 +87,12 @@ func (p *Profile) Validate() error {
 		dbFile := fmt.Sprintf("memos_%s.db", p.Mode)
 		p.DSN = filepath.Join(dataDir, dbFile)
 	}
+	if p.Driver == "mysql" && p.DSN == "" {
+		return fmt.Errorf("MySQL driver requires a DSN: set MEMOS_DSN or pass --dsn (e.g. --dsn \"user:password@tcp(localhost:3306)/memos?charset=utf8mb4\")")
+	}
+	if p.Driver == "postgres" && p.DSN == "" {
+		return fmt.Errorf("PostgreSQL driver requires a DSN: set MEMOS_DSN or pass --dsn")
+	}
 
 	return nil
 }

@@ -90,16 +90,20 @@ var (
 
 func init() {
 	viper.SetDefault("mode", "dev")
-	viper.SetDefault("driver", "sqlite")
+	viper.SetDefault("driver", "mysql")
 	viper.SetDefault("port", 8081)
+	// Default MySQL DSN so "go run ." works without flags (override with --dsn or MEMOS_DSN if needed).
+	//	viper.SetDefault("dsn", "memos_db:root@tcp(localhost:3306)/memos?charset=utf8mb4")
+	viper.SetDefault("dsn", "memos_user:memos_pass@tcp(127.0.0.1:3306)/memos_db?charset=utf8mb4&parseTime=True&loc=Local")
 
 	rootCmd.PersistentFlags().String("mode", "dev", `mode of server, can be "prod" or "dev" or "demo"`)
 	rootCmd.PersistentFlags().String("addr", "", "address of server")
 	rootCmd.PersistentFlags().Int("port", 8081, "port of server")
 	rootCmd.PersistentFlags().String("unix-sock", "", "path to the unix socket, overrides --addr and --port")
 	rootCmd.PersistentFlags().String("data", "", "data directory")
-	rootCmd.PersistentFlags().String("driver", "sqlite", "database driver")
+	rootCmd.PersistentFlags().String("driver", "mysql", "database driver (mysql)")
 	rootCmd.PersistentFlags().String("dsn", "", "database source name(aka. DSN)")
+	//	rootCmd.PersistentFlags().String("dsn", "memos_db:root@tcp(localhost:3306)/memos_db?charset=utf8mb4", "database source name (default: memos:root@tcp(localhost:3306)/memos?charset=utf8mb4)")
 	rootCmd.PersistentFlags().String("instance-url", "", "the url of your memos instance")
 
 	if err := viper.BindPFlag("mode", rootCmd.PersistentFlags().Lookup("mode")); err != nil {

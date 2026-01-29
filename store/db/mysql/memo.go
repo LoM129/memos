@@ -25,6 +25,12 @@ func (d *DB) CreateMemo(ctx context.Context, create *store.Memo) (*store.Memo, e
 		payload = string(payloadBytes)
 	}
 	args := []any{create.UID, create.CreatorID, create.Content, create.Visibility, payload}
+	// Allow optional created_ts/updated_ts so memos can be created for any date (past or future).
+	if create.CreatedTs != 0 {
+		fields = append(fields, "`created_ts`", "`updated_ts`")
+		placeholder = append(placeholder, "FROM_UNIXTIME(?)", "FROM_UNIXTIME(?)")
+		args = append(args, create.CreatedTs, create.UpdatedTs)
+	}
 
 	stmt := "INSERT INTO `memo` (" + strings.Join(fields, ", ") + ") VALUES (" + strings.Join(placeholder, ", ") + ")"
 	result, err := d.db.ExecContext(ctx, stmt, args...)

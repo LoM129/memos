@@ -26,7 +26,8 @@ interface Props {
 const StatisticsView = observer((props: Props) => {
   const { statisticsData } = props;
   const { activityStats } = statisticsData;
-  const [selectedDate] = useState(new Date());
+  const displayTimeFilter = memoFilterStore.getFiltersByFactor("displayTime")[0]?.value;
+  const selectedDate = displayTimeFilter ? new Date(displayTimeFilter) : new Date();
   const [visibleMonthString, setVisibleMonthString] = useState(dayjs().format("YYYY-MM"));
 
   const handleCalendarClick = useCallback((date: string) => {

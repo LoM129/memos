@@ -65,7 +65,11 @@ func (s *APIV1Service) CreateMemo(ctx context.Context, request *v1pb.CreateMemoR
 	if request.Memo.Location != nil {
 		create.Payload.Location = convertLocationToStore(request.Memo.Location)
 	}
-
+	// Allow optional display_time on create so memos can be created for any date (past or future).
+	if request.Memo.DisplayTime != nil {
+		create.CreatedTs = request.Memo.DisplayTime.AsTime().Unix()
+		create.UpdatedTs = create.CreatedTs
+	}
 	memo, err := s.Store.CreateMemo(ctx, create)
 	if err != nil {
 		// Check for unique constraint violation (AIP-133 compliance)

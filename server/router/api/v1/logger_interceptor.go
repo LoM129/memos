@@ -32,7 +32,16 @@ func (in *LoggerInterceptor) loggerInterceptorDo(ctx context.Context, fullMethod
 	case codes.OK:
 		logLevel = slog.LevelInfo
 		logMsg = "OK"
-	case codes.Unauthenticated, codes.OutOfRange, codes.PermissionDenied, codes.NotFound:
+	case codes.Unauthenticated:
+		// GetCurrentSession returns Unauthenticated when no one is logged in — expected, don't log as client error.
+		if fullMethod == "/memos.api.v1.AuthService/GetCurrentSession" {
+			logLevel = slog.LevelDebug
+			logMsg = "OK"
+		} else {
+			logLevel = slog.LevelInfo
+			logMsg = "client error"
+		}
+	case codes.OutOfRange, codes.PermissionDenied, codes.NotFound:
 		logLevel = slog.LevelInfo
 		logMsg = "client error"
 	case codes.Internal, codes.Unknown, codes.DataLoss, codes.Unavailable, codes.DeadlineExceeded:

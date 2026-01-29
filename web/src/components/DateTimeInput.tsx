@@ -1,13 +1,13 @@
 import dayjs from "dayjs";
+import React from "react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 
-// must be compatible with JS Date.parse(), we use ISO 8601 (almost)
-const DATE_TIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
+// datetime-local requires YYYY-MM-DDTHH:mm (ISO 8601 with T). No min/max so past and future dates are allowed.
+const DATETIME_LOCAL_FORMAT = "YYYY-MM-DDTHH:mm";
 
-// convert Date to datetime string.
-const formatDate = (date: Date): string => {
-  return dayjs(date).format(DATE_TIME_FORMAT);
+const formatForInput = (date: Date): string => {
+  return dayjs(date).format(DATETIME_LOCAL_FORMAT);
 };
 
 interface Props {
@@ -16,26 +16,47 @@ interface Props {
 }
 
 const DateTimeInput: React.FC<Props> = ({ value, onChange }) => {
+  const [inputValue, setInputValue] = React.useState(() => formatForInput(value));
+
+  // Keep input in sync when parent changes value (e.g. calendar filter).
+  React.useEffect(() => {
+    setInputValue(formatForInput(value));
+  }, [value.getTime()]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setInputValue(raw);
+    if (raw) {
+      const date = dayjs(raw).toDate();
+      if (!Number.isNaN(date.getTime())) {
+        onChange(date);
+      }
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (raw) {
+      const date = dayjs(raw).toDate();
+      if (!Number.isNaN(date.getTime())) {
+        onChange(date);
+      } else {
+        toast.error("Invalid datetime format.");
+        setInputValue(formatForInput(value));
+      }
+    } else {
+      setInputValue(formatForInput(value));
+    }
+  };
+
   return (
     <input
       type="datetime-local"
       className={cn("px-1 bg-transparent rounded text-xs transition-all", "border-transparent outline-none focus:border-border", "border")}
-      defaultValue={formatDate(value)}
-      onBlur={(e) => {
-        const inputValue = e.target.value;
-        if (inputValue) {
-          // note: inputValue must be compatible with JS Date.parse()
-          const date = dayjs(inputValue).toDate();
-          // Check if the date is valid.
-          if (!isNaN(date.getTime())) {
-            onChange(date);
-          } else {
-            toast.error("Invalid datetime format. Use format: 2023-12-31 23:59:59");
-            e.target.value = formatDate(value);
-          }
-        }
-      }}
-      placeholder={DATE_TIME_FORMAT}
+      value={inputValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      step={60}
     />
   );
 };

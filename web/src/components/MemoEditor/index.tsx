@@ -13,7 +13,7 @@ import { isValidUrl } from "@/helpers/utils";
 import useAsyncEffect from "@/hooks/useAsyncEffect";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
-import { attachmentStore, instanceStore, memoStore, userStore } from "@/store";
+import { attachmentStore, instanceStore, memoFilterStore, memoStore, userStore } from "@/store";
 import { extractMemoIdFromName } from "@/store/common";
 import { Attachment } from "@/types/proto/api/v1/attachment_service";
 import { Location, Memo, MemoRelation, MemoRelation_Type, Visibility } from "@/types/proto/api/v1/memo_service";
@@ -58,7 +58,17 @@ const MemoEditor = observer((props: MemoEditorProps) => {
     isComposing: false,
     isDraggingFile: false,
   });
-  const [createTime, setCreateTime] = useState<Date | undefined>();
+  // For new memos, set createTime from calendar filter or today so the date picker is visible and usable from first render.
+  const [createTime, setCreateTime] = useState<Date | undefined>(() => {
+    if (memoName) return undefined;
+    const displayTimeFilters = memoFilterStore.getFiltersByFactor("displayTime");
+    const filterDate = displayTimeFilters[0]?.value;
+    if (filterDate) {
+      const date = new Date(filterDate);
+      if (!Number.isNaN(date.getTime())) return date;
+    }
+    return new Date();
+  });
   const [updateTime, setUpdateTime] = useState<Date | undefined>();
   const [hasContent, setHasContent] = useState<boolean>(false);
   const editorRef = useRef<EditorRefActions>(null);
@@ -72,6 +82,9 @@ const MemoEditor = observer((props: MemoEditorProps) => {
       )
     : state.relationList.filter((relation) => relation.type === MemoRelation_Type.REFERENCE);
   const instanceMemoRelatedSetting = instanceStore.state.memoRelatedSetting;
+
+  // Read displayTime filter so observer re-renders when user selects a date on the left calendar.
+  const displayTimeFilterValue = memoFilterStore.getFiltersByFactor("displayTime")[0]?.value ?? "";
 
   useEffect(() => {
     editorRef.current?.setContent(contentCache || "");
@@ -97,6 +110,19 @@ const MemoEditor = observer((props: MemoEditorProps) => {
       memoVisibility: convertVisibilityFromString(visibility),
     }));
   }, [parentMemoName, userGeneralSetting?.memoVisibility, instanceMemoRelatedSetting.disallowPublicVisibility]);
+
+  // For new memos: keep "Created" in sync with the date selected on the left calendar.
+  useEffect(() => {
+    if (memoName) return;
+    if (displayTimeFilterValue) {
+      const date = new Date(displayTimeFilterValue);
+      if (!Number.isNaN(date.getTime())) {
+        setCreateTime(date);
+        return;
+      }
+    }
+    setCreateTime(new Date());
+  }, [memoName, displayTimeFilterValue]);
 
   useAsyncEffect(async () => {
     if (!memoName) {
@@ -357,6 +383,7 @@ const MemoEditor = observer((props: MemoEditorProps) => {
                 attachments: allAttachments,
                 relations: state.relationList,
                 location: state.location,
+                displayTime: createTime ?? new Date(),
               }),
               memoId: "",
             })
@@ -488,6 +515,7 @@ const MemoEditor = observer((props: MemoEditorProps) => {
             onRemoveLocalFile={removeFile}
           />
           <RelationList mode="edit" relations={referenceRelations} onRelationsChange={handleSetRelationList} />
+          {/* New memo date comes only from the left calendar (Section 2); no date picker in editor. */}
           <div className="relative w-full flex flex-row justify-between items-center pt-2 gap-2" onFocus={(e) => e.stopPropagation()}>
             <div className="flex flex-row justify-start items-center gap-1">
               <InsertMenu
@@ -525,7 +553,7 @@ const MemoEditor = observer((props: MemoEditorProps) => {
           </div>
         </div>
 
-        {/* Show memo metadata if memoName is provided */}
+        {/* Full metadata when editing existing memo */}
         {memoName && (
           <div className="w-full -mt-1 mb-4 text-xs leading-5 px-4 opacity-60 font-mono text-muted-foreground">
             <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-0.5 items-center">

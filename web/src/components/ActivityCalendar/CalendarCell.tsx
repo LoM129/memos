@@ -15,14 +15,14 @@ export const CalendarCell = memo((props: CalendarCellProps) => {
   const { day, maxCount, tooltipText, onClick } = props;
 
   const handleClick = () => {
-    if (day.count > 0 && onClick) {
+    if (onClick && day.isCurrentMonth) {
       onClick(day.date);
     }
   };
 
   const baseClasses =
     "w-full h-7 rounded-md border text-xs flex items-center justify-center text-center transition-transform duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background select-none";
-  const isInteractive = Boolean(onClick && day.count > 0);
+  const isInteractive = Boolean(onClick && day.isCurrentMonth);
   const ariaLabel = day.isSelected ? `${tooltipText} (selected)` : tooltipText;
 
   if (!day.isCurrentMonth) {
