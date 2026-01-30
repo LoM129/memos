@@ -103,7 +103,7 @@ func init() {
 	rootCmd.PersistentFlags().String("data", "", "data directory")
 	rootCmd.PersistentFlags().String("driver", "mysql", "database driver (mysql)")
 	rootCmd.PersistentFlags().String("dsn", "", "database source name(aka. DSN)")
-	//	rootCmd.PersistentFlags().String("dsn", "root:root@tcp(localhost:3306)/memos_db?charset=utf8mb4", "database source name (default: memos:root@tcp(localhost:3306)/memos?charset=utf8mb4)")
+	//rootCmd.PersistentFlags().String("dsn", "root@tcp(localhost:3306)/memos_db?charset=utf8mb4", "database source name (default: memos:root@tcp(localhost:3306)/memos?charset=utf8mb4)")
 	rootCmd.PersistentFlags().String("instance-url", "", "the url of your memos instance")
 
 	if err := viper.BindPFlag("mode", rootCmd.PersistentFlags().Lookup("mode")); err != nil {
