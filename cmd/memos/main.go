@@ -21,7 +21,7 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "memos",
+		Use:   "memos_db",
 		Short: `An open source, lightweight note-taking service. Easily capture and share your great thoughts.`,
 		Run: func(_ *cobra.Command, _ []string) {
 			instanceProfile := &profile.Profile{
