@@ -21,7 +21,7 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:   "memos_db",
+		Use:   "memos",
 		Short: `An open source, lightweight note-taking service. Easily capture and share your great thoughts.`,
 		Run: func(_ *cobra.Command, _ []string) {
 			instanceProfile := &profile.Profile{
@@ -94,7 +94,7 @@ func init() {
 	viper.SetDefault("port", 8081)
 	// Default MySQL DSN so "go run ." works without flags (override with --dsn or MEMOS_DSN if needed).
 	//	viper.SetDefault("dsn", "memos_db:root@tcp(localhost:3306)/memos?charset=utf8mb4")
-	viper.SetDefault("dsn", "root@tcp(127.0.0.1:3306)/memos_db?charset=utf8mb4&parseTime=True&loc=Local")
+	viper.SetDefault("dsn", "root@tcp(127.0.0.1:3306)/memos?charset=utf8mb4&parseTime=True&loc=Local")
 
 	rootCmd.PersistentFlags().String("mode", "dev", `mode of server, can be "prod" or "dev" or "demo"`)
 	rootCmd.PersistentFlags().String("addr", "", "address of server")
